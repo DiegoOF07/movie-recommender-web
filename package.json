@@ -1,5 +1,5 @@
 {
-  "name": "db2-project2-frontend",
+  "name": "movie-recommender-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,7 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.5.32"
+    "vue": "^3.5.32",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@types/node": "^24.12.2",
