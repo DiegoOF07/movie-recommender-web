@@ -26,20 +26,27 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading-row"><div class="spinner" /></div>
+    <div v-if="loading" class="loading-row">
+      <div class="spinner" />
+    </div>
     <div v-else-if="!directors.length" class="empty-state">Sin resultados.</div>
     <div v-else class="table-wrap card">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Nombre</th><th>Nacionalidad</th><th>Nacimiento</th><th>Peliculas</th><th>Oscar</th><th>Acciones</th>
+            <th>Nombre</th>
+            <th>Nacionalidad</th>
+            <th>Nacimiento</th>
+            <th>Peliculas</th>
+            <th>Oscar</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="d in directors" :key="d.name">
             <td style="color:var(--text-primary);font-weight:500">{{ d.name }}</td>
             <td>{{ d.nationality }}</td>
-            <td>{{ d.birthDate?.slice(0,10) }}</td>
+            <td>{{ d.birthDate?.slice(0, 10) }}</td>
             <td>{{ d.moviesCount }}</td>
             <td>
               <span v-if="d.oscarWinner" style="color:var(--accent);font-weight:600">&#9733; Si</span>
@@ -57,7 +64,9 @@
     </div>
 
     <div class="danger-zone card" style="margin-top:24px;padding:20px">
-      <h3 style="font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;color:var(--red);margin-bottom:14px">ELIMINAR MULTIPLES DIRECTORES</h3>
+      <h3
+        style="font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;color:var(--red);margin-bottom:14px">
+        ELIMINAR MULTIPLES DIRECTORES</h3>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Debes especificar al menos un filtro.</p>
       <div class="form-row" style="margin-bottom:12px">
         <div class="form-group">
@@ -88,13 +97,16 @@
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="form-group"><label>Nombre *</label><input v-model="form.name" /></div>
           <div class="form-row">
-            <div class="form-group"><label>Fecha de nacimiento</label><input v-model="form.birthDate" type="date" /></div>
+            <div class="form-group"><label>Fecha de nacimiento</label><input v-model="form.birthDate" type="date" />
+            </div>
             <div class="form-group"><label>Nacionalidad</label><input v-model="form.nationality" /></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>Numero de peliculas</label><input v-model.number="form.moviesCount" type="number" /></div>
+            <div class="form-group"><label>Numero de peliculas</label><input v-model.number="form.moviesCount"
+                type="number" /></div>
             <div class="form-group" style="justify-content:flex-end;padding-top:20px">
-              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;cursor:pointer">
+              <label
+                style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;cursor:pointer">
                 <input type="checkbox" v-model="form.oscarWinner" style="width:auto" /> Ganador de Oscar
               </label>
             </div>
@@ -117,52 +129,58 @@
     <div v-if="updateTarget" class="modal-overlay" @click.self="updateTarget = null">
       <div class="modal">
         <div class="modal-header">
-          <span class="modal-title">EDITAR PROPS</span>
+          <span class="modal-title">GESTIONAR PROPS</span>
           <button class="modal-close" @click="updateTarget = null">&times;</button>
         </div>
-        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Director: <strong>{{ updateTarget }}</strong></p>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">
+          Director: <strong>{{ updateTarget }}</strong>
+        </p>
+
+        <h4 style="font-size:13px;font-weight:600;letter-spacing:0.05em;margin-bottom:12px">ACTUALIZAR PROPIEDAD</h4>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="form-group">
             <label>Propiedad</label>
             <select v-model="upKey">
-              <option value="">-- Selecciona una propiedad --</option>
+              <option value="">-- Selecciona --</option>
               <option v-for="p in directorProps" :key="p.key" :value="p.key">{{ p.label }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Valor</label>
-            <input v-if="currentPropType !== 'boolean'" v-model="upValue" :type="currentPropType === 'number' ? 'number' : 'text'" placeholder="Nuevo valor" />
+            <input v-if="currentPropType !== 'boolean'" v-model="upValue"
+              :type="currentPropType === 'number' ? 'number' : 'text'"
+              :step="currentPropType === 'number' ? '0.1' : undefined" />
             <select v-else v-model="upValue">
               <option value="true">true</option>
               <option value="false">false</option>
             </select>
           </div>
-          <p v-if="upError" class="error-msg">{{ upError }}</p>
           <p v-if="upSuccess" class="success-msg">{{ upSuccess }}</p>
-          <div style="display:flex;gap:10px;justify-content:flex-end">
-            <button class="btn btn-ghost" @click="updateTarget = null">Cancelar</button>
-            <button class="btn btn-primary" @click="updateProps">Guardar</button>
+          <p v-if="upError" class="error-msg">{{ upError }}</p>
+          <button class="btn btn-primary" style="align-self:flex-end" @click="updateProps">Guardar</button>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:20px 0" />
+
+        <h4 style="font-size:13px;font-weight:600;letter-spacing:0.05em;margin-bottom:12px">ELIMINAR PROPIEDADES</h4>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="form-group">
+            <label>Propiedades a eliminar (separadas por coma)</label>
+            <input v-model="dpPropsStr" placeholder="Ej: synopsis, backdropUrl" />
           </div>
+          <p v-if="dpSuccess" class="success-msg">{{ dpSuccess }}</p>
+          <p v-if="dpError" class="error-msg">{{ dpError }}</p>
+          <button class="btn btn-danger" style="align-self:flex-end" @click="deleteProps">Eliminar props</button>
         </div>
       </div>
     </div>
 
-    <ConfirmDialog
-      :show="!!deleteTarget"
-      title="Eliminar director"
-      :message="`Seguro que deseas eliminar al director '${deleteTarget}'?`"
-      confirm-label="Eliminar"
-      @confirm="doDelete"
-      @cancel="deleteTarget = ''"
-    />
-    <ConfirmDialog
-      :show="showDeleteMany"
-      title="Eliminar multiples directores"
+    <ConfirmDialog :show="!!deleteTarget" title="Eliminar director"
+      :message="`Seguro que deseas eliminar al director '${deleteTarget}'?`" confirm-label="Eliminar"
+      @confirm="doDelete" @cancel="deleteTarget = ''" />
+    <ConfirmDialog :show="showDeleteMany" title="Eliminar multiples directores"
       message="Se eliminaran todos los directores que coincidan con los filtros. Esta accion es irreversible."
-      confirm-label="Eliminar"
-      @confirm="doDeleteMany"
-      @cancel="showDeleteMany = false"
-    />
+      confirm-label="Eliminar" @confirm="doDeleteMany" @cancel="showDeleteMany = false" />
   </div>
 </template>
 
@@ -173,12 +191,12 @@ import type { Director } from '@/types'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const directorProps = [
-  { key: 'name',        label: 'Nombre',          type: 'text' },
-  { key: 'birthDate',   label: 'Fecha nacimiento', type: 'text' },
-  { key: 'nationality', label: 'Nacionalidad',     type: 'text' },
+  { key: 'name', label: 'Nombre', type: 'text' },
+  { key: 'birthDate', label: 'Fecha nacimiento', type: 'text' },
+  { key: 'nationality', label: 'Nacionalidad', type: 'text' },
   { key: 'oscarWinner', label: 'Ganador de Oscar', type: 'boolean' },
-  { key: 'moviesCount', label: 'Num. peliculas',   type: 'number' },
-  { key: 'profileUrl',  label: 'URL de perfil',    type: 'text' },
+  { key: 'moviesCount', label: 'Num. peliculas', type: 'number' },
+  { key: 'profileUrl', label: 'URL de perfil', type: 'text' },
 ]
 
 const directors = ref<Director[]>([])
@@ -204,6 +222,22 @@ const deleteTarget = ref('')
 const showDeleteMany = ref(false)
 const dmNationality = ref('')
 const dmOscar = ref('')
+
+const dpPropsStr = ref('')
+const dpError = ref('')
+const dpSuccess = ref('')
+
+async function deleteProps() {
+  const props = dpPropsStr.value.split(',').map(s => s.trim()).filter(Boolean)
+  if (!props.length) { dpError.value = 'Ingresa al menos una propiedad'; return }
+  dpError.value = ''; dpSuccess.value = ''
+  try {
+    await directorApi.deleteProps(updateTarget.value!, props)
+    dpSuccess.value = 'Propiedades eliminadas.'
+    dpPropsStr.value = ''
+    load()
+  } catch (e: unknown) { dpError.value = e instanceof Error ? e.message : 'Error' }
+}
 
 const canDeleteMany = computed(() => dmNationality.value.trim() !== '' || dmOscar.value !== '')
 
@@ -267,14 +301,62 @@ onMounted(load)
 </script>
 
 <style scoped>
-.panel { padding: 28px; max-width: 1200px; margin: 0 auto; }
-.panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-.loading-row { display: flex; justify-content: center; padding: 48px; }
-.table-wrap { overflow-x: auto; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.data-table th { padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
-.data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: middle; }
-.data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: rgba(255,255,255,0.02); }
-.danger-zone { border-color: rgba(224,82,82,0.2); }
+.panel {
+  padding: 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.loading-row {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.danger-zone {
+  border-color: rgba(224, 82, 82, 0.2);
+}
 </style>
