@@ -7,13 +7,14 @@
       </button>
     </div>
 
-    <!-- Add follows form -->
     <Transition name="fade">
       <div v-if="showForm" class="add-form">
         <div class="form-group">
           <label>Username a seguir</label>
           <input v-model="targetUsername" placeholder="Ej: john_doe" @keyup.enter="submit" />
-          <p v-if="targetUsername === auth.username && targetUsername !== ''" class="field-error">No puedes seguirte a ti mismo.</p>
+          <p v-if="targetUsername === auth.username && targetUsername !== ''" class="field-error">
+            No puedes seguirte a ti mismo.
+          </p>
         </div>
         <div class="form-group">
           <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;cursor:pointer">
@@ -37,7 +38,6 @@
 
     <hr class="divider" style="margin:16px 0" />
 
-    <!-- Followed users list -->
     <div v-if="loadingList" class="loading-row"><div class="spinner" /></div>
     <div v-else-if="!followedUsers.length" class="empty-state" style="padding:24px 0;font-size:13px">
       Aun no sigues a nadie.
@@ -49,7 +49,7 @@
           <span class="follow-username">{{ u.username }}</span>
           <span v-if="u.isFavorite" class="fav-badge">&#9733; Favorito</span>
         </div>
-        <span class="follow-date">{{ u.since }}</span>
+        <span class="follow-date">{{ formatDate(u.since) }}</span>
       </li>
     </ul>
 
@@ -84,6 +84,11 @@ const canSubmit = computed(() =>
   targetUsername.value.trim() !== '' && targetUsername.value.trim() !== auth.username
 )
 
+function formatDate(raw: string): string {
+  if (!raw) return ''
+  return String(raw).slice(0, 10)
+}
+
 async function submit() {
   if (!canSubmit.value) return
   formLoading.value = true; formError.value = ''; formSuccess.value = ''
@@ -97,21 +102,25 @@ async function submit() {
       isFavorite: isFavorite.value,
     })
     formSuccess.value = `Ahora sigues a ${targetUsername.value.trim()}.`
-    followedUsers.value.push({
-      username: targetUsername.value.trim(),
-      isFavorite: isFavorite.value,
-      since: today,
-    })
     targetUsername.value = ''
     isFavorite.value = false
+    await loadFollows()
   } catch (e: unknown) {
     formError.value = e instanceof Error ? e.message : 'Error al seguir usuario'
   } finally { formLoading.value = false }
 }
 
 async function loadFollows() {
+  if (!auth.username) return
   loadingList.value = true
   try {
+    const data = await userApi.getFollows(auth.username)
+    followedUsers.value = data.map(d => ({
+      username: String(d.username ?? ''),
+      isFavorite: Boolean(d.isFavorite),
+      since: String(d.since ?? ''),
+    }))
+  } catch {
     followedUsers.value = []
   } finally { loadingList.value = false }
 }

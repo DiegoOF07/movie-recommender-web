@@ -26,47 +26,40 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading-row">
-      <div class="spinner" />
-    </div>
+    <div v-if="loading" class="loading-row"><div class="spinner" /></div>
     <div v-else-if="!directors.length" class="empty-state">Sin resultados.</div>
-    <div v-else class="table-wrap card">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Nacionalidad</th>
-            <th>Nacimiento</th>
-            <th>Peliculas</th>
-            <th>Oscar</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="d in directors" :key="d.name">
-            <td style="color:var(--text-primary);font-weight:500">{{ d.name }}</td>
-            <td>{{ d.nationality }}</td>
-            <td>{{ d.birthDate?.slice(0, 10) }}</td>
-            <td>{{ d.moviesCount }}</td>
-            <td>
-              <span v-if="d.oscarWinner" style="color:var(--accent);font-weight:600">&#9733; Si</span>
-              <span v-else style="color:var(--text-muted)">No</span>
-            </td>
-            <td>
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-ghost btn-sm" @click="openUpdate(d.name)">Editar props</button>
-                <button class="btn btn-danger btn-sm" @click="deleteTarget = d.name">Eliminar</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+    <!-- Vista de tarjetas con foto -->
+    <div v-else class="directors-grid">
+      <div v-for="d in directors" :key="d.name" class="director-card card">
+        <div class="director-photo-wrap">
+          <img
+            v-if="d.profileUrl"
+            :src="d.profileUrl"
+            :alt="d.name"
+            class="director-photo"
+            @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')"
+          />
+          <div v-else class="director-photo-fallback">{{ initials(d.name) }}</div>
+        </div>
+        <div class="director-info">
+          <span class="director-name">{{ d.name }}</span>
+          <span class="director-meta">{{ d.nationality }}</span>
+          <span class="director-meta">{{ d.birthDate?.slice(0,10) }}</span>
+          <div class="director-footer">
+            <span class="movies-count">{{ d.moviesCount }} peliculas</span>
+            <span v-if="d.oscarWinner" class="oscar-badge">&#9733; Oscar</span>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <button class="btn btn-ghost btn-sm" style="flex:1" @click="openUpdate(d.name)">Editar props</button>
+            <button class="btn btn-danger btn-sm" @click="deleteTarget = d.name">Eliminar</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="danger-zone card" style="margin-top:24px;padding:20px">
-      <h3
-        style="font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;color:var(--red);margin-bottom:14px">
-        ELIMINAR MULTIPLES DIRECTORES</h3>
+      <h3 style="font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;color:var(--red);margin-bottom:14px">ELIMINAR MULTIPLES DIRECTORES</h3>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Debes especificar al menos un filtro.</p>
       <div class="form-row" style="margin-bottom:12px">
         <div class="form-group">
@@ -97,21 +90,21 @@
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="form-group"><label>Nombre *</label><input v-model="form.name" /></div>
           <div class="form-row">
-            <div class="form-group"><label>Fecha de nacimiento</label><input v-model="form.birthDate" type="date" />
-            </div>
+            <div class="form-group"><label>Fecha de nacimiento</label><input v-model="form.birthDate" type="date" /></div>
             <div class="form-group"><label>Nacionalidad</label><input v-model="form.nationality" /></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>Numero de peliculas</label><input v-model.number="form.moviesCount"
-                type="number" /></div>
+            <div class="form-group"><label>Numero de peliculas</label><input v-model.number="form.moviesCount" type="number" /></div>
             <div class="form-group" style="justify-content:flex-end;padding-top:20px">
-              <label
-                style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;cursor:pointer">
+              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;cursor:pointer">
                 <input type="checkbox" v-model="form.oscarWinner" style="width:auto" /> Ganador de Oscar
               </label>
             </div>
           </div>
-          <div class="form-group"><label>URL de perfil</label><input v-model="form.profileUrl" /></div>
+          <div class="form-group"><label>URL de perfil</label><input v-model="form.profileUrl" placeholder="https://..." /></div>
+          <div v-if="form.profileUrl" class="photo-preview">
+            <img :src="form.profileUrl" alt="preview" @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')" />
+          </div>
           <p v-if="formError" class="error-msg">{{ formError }}</p>
           <p v-if="formSuccess" class="success-msg">{{ formSuccess }}</p>
           <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
@@ -132,41 +125,37 @@
           <span class="modal-title">GESTIONAR PROPS</span>
           <button class="modal-close" @click="updateTarget = null">&times;</button>
         </div>
-        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">
-          Director: <strong>{{ updateTarget }}</strong>
-        </p>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Director: <strong>{{ updateTarget }}</strong></p>
 
-        <h4 style="font-size:13px;font-weight:600;letter-spacing:0.05em;margin-bottom:12px">ACTUALIZAR PROPIEDAD</h4>
+        <h4 style="font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:12px">ACTUALIZAR PROPIEDAD</h4>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="form-group">
             <label>Propiedad</label>
             <select v-model="upKey">
-              <option value="">-- Selecciona --</option>
+              <option value="">-- Selecciona una propiedad --</option>
               <option v-for="p in directorProps" :key="p.key" :value="p.key">{{ p.label }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Valor</label>
-            <input v-if="currentPropType !== 'boolean'" v-model="upValue"
-              :type="currentPropType === 'number' ? 'number' : 'text'"
-              :step="currentPropType === 'number' ? '0.1' : undefined" />
+            <input v-if="currentPropType !== 'boolean'" v-model="upValue" :type="currentPropType === 'number' ? 'number' : 'text'" placeholder="Nuevo valor" />
             <select v-else v-model="upValue">
               <option value="true">true</option>
               <option value="false">false</option>
             </select>
           </div>
-          <p v-if="upSuccess" class="success-msg">{{ upSuccess }}</p>
           <p v-if="upError" class="error-msg">{{ upError }}</p>
+          <p v-if="upSuccess" class="success-msg">{{ upSuccess }}</p>
           <button class="btn btn-primary" style="align-self:flex-end" @click="updateProps">Guardar</button>
         </div>
 
         <hr style="border:none;border-top:1px solid var(--border);margin:20px 0" />
 
-        <h4 style="font-size:13px;font-weight:600;letter-spacing:0.05em;margin-bottom:12px">ELIMINAR PROPIEDADES</h4>
+        <h4 style="font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:12px">ELIMINAR PROPIEDADES</h4>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="form-group">
             <label>Propiedades a eliminar (separadas por coma)</label>
-            <input v-model="dpPropsStr" placeholder="Ej: synopsis, backdropUrl" />
+            <input v-model="dpPropsStr" placeholder="Ej: profileUrl, moviesCount" />
           </div>
           <p v-if="dpSuccess" class="success-msg">{{ dpSuccess }}</p>
           <p v-if="dpError" class="error-msg">{{ dpError }}</p>
@@ -175,12 +164,22 @@
       </div>
     </div>
 
-    <ConfirmDialog :show="!!deleteTarget" title="Eliminar director"
-      :message="`Seguro que deseas eliminar al director '${deleteTarget}'?`" confirm-label="Eliminar"
-      @confirm="doDelete" @cancel="deleteTarget = ''" />
-    <ConfirmDialog :show="showDeleteMany" title="Eliminar multiples directores"
+    <ConfirmDialog
+      :show="!!deleteTarget"
+      title="Eliminar director"
+      :message="`Seguro que deseas eliminar al director '${deleteTarget}'?`"
+      confirm-label="Eliminar"
+      @confirm="doDelete"
+      @cancel="deleteTarget = ''"
+    />
+    <ConfirmDialog
+      :show="showDeleteMany"
+      title="Eliminar multiples directores"
       message="Se eliminaran todos los directores que coincidan con los filtros. Esta accion es irreversible."
-      confirm-label="Eliminar" @confirm="doDeleteMany" @cancel="showDeleteMany = false" />
+      confirm-label="Eliminar"
+      @confirm="doDeleteMany"
+      @cancel="showDeleteMany = false"
+    />
   </div>
 </template>
 
@@ -191,12 +190,12 @@ import type { Director } from '@/types'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const directorProps = [
-  { key: 'name', label: 'Nombre', type: 'text' },
-  { key: 'birthDate', label: 'Fecha nacimiento', type: 'text' },
-  { key: 'nationality', label: 'Nacionalidad', type: 'text' },
+  { key: 'name',        label: 'Nombre',          type: 'text' },
+  { key: 'birthDate',   label: 'Fecha nacimiento', type: 'text' },
+  { key: 'nationality', label: 'Nacionalidad',     type: 'text' },
   { key: 'oscarWinner', label: 'Ganador de Oscar', type: 'boolean' },
-  { key: 'moviesCount', label: 'Num. peliculas', type: 'number' },
-  { key: 'profileUrl', label: 'URL de perfil', type: 'text' },
+  { key: 'moviesCount', label: 'Num. peliculas',   type: 'number' },
+  { key: 'profileUrl',  label: 'URL de perfil',    type: 'text' },
 ]
 
 const directors = ref<Director[]>([])
@@ -216,6 +215,10 @@ const upValue = ref('')
 const upError = ref('')
 const upSuccess = ref('')
 
+const dpPropsStr = ref('')
+const dpError = ref('')
+const dpSuccess = ref('')
+
 const currentPropType = computed(() => directorProps.find(p => p.key === upKey.value)?.type ?? 'text')
 
 const deleteTarget = ref('')
@@ -223,23 +226,11 @@ const showDeleteMany = ref(false)
 const dmNationality = ref('')
 const dmOscar = ref('')
 
-const dpPropsStr = ref('')
-const dpError = ref('')
-const dpSuccess = ref('')
-
-async function deleteProps() {
-  const props = dpPropsStr.value.split(',').map(s => s.trim()).filter(Boolean)
-  if (!props.length) { dpError.value = 'Ingresa al menos una propiedad'; return }
-  dpError.value = ''; dpSuccess.value = ''
-  try {
-    await directorApi.deleteProps(updateTarget.value!, props)
-    dpSuccess.value = 'Propiedades eliminadas.'
-    dpPropsStr.value = ''
-    load()
-  } catch (e: unknown) { dpError.value = e instanceof Error ? e.message : 'Error' }
-}
-
 const canDeleteMany = computed(() => dmNationality.value.trim() !== '' || dmOscar.value !== '')
+
+function initials(name: string): string {
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
+}
 
 async function load() {
   loading.value = true
@@ -264,7 +255,9 @@ async function create() {
 }
 
 function openUpdate(name: string) {
-  updateTarget.value = name; upKey.value = ''; upValue.value = ''; upError.value = ''; upSuccess.value = ''
+  updateTarget.value = name
+  upKey.value = ''; upValue.value = ''; upError.value = ''; upSuccess.value = ''
+  dpPropsStr.value = ''; dpError.value = ''; dpSuccess.value = ''
 }
 
 async function updateProps() {
@@ -279,6 +272,18 @@ async function updateProps() {
     upSuccess.value = 'Propiedad actualizada.'
     load()
   } catch (e: unknown) { upError.value = e instanceof Error ? e.message : 'Error' }
+}
+
+async function deleteProps() {
+  const props = dpPropsStr.value.split(',').map(s => s.trim()).filter(Boolean)
+  if (!props.length) { dpError.value = 'Ingresa al menos una propiedad'; return }
+  dpError.value = ''; dpSuccess.value = ''
+  try {
+    await directorApi.deleteProps(updateTarget.value!, props)
+    dpSuccess.value = 'Propiedades eliminadas.'
+    dpPropsStr.value = ''
+    load()
+  } catch (e: unknown) { dpError.value = e instanceof Error ? e.message : 'Error' }
 }
 
 async function doDelete() {
@@ -301,62 +306,106 @@ onMounted(load)
 </script>
 
 <style scoped>
-.panel {
-  padding: 28px;
-  max-width: 1200px;
-  margin: 0 auto;
+.panel { padding: 28px; max-width: 1200px; margin: 0 auto; }
+.panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.loading-row { display: flex; justify-content: center; padding: 48px; }
+
+.directors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
 }
 
-.panel-header {
+.director-card {
+  padding: 16px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s;
 }
+.director-card:hover { border-color: var(--border-mid); }
 
-.loading-row {
-  display: flex;
-  justify-content: center;
-  padding: 48px;
-}
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-.data-table {
+.director-photo-wrap {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.data-table th {
-  padding: 12px 14px;
-  text-align: left;
+.director-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.director-photo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.director-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.director-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.director-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.director-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.movies-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.oscar-badge {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
+  color: var(--accent);
 }
 
-.data-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-secondary);
-  vertical-align: middle;
+.photo-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.danger-zone {
-  border-color: rgba(224, 82, 82, 0.2);
-}
+.danger-zone { border-color: rgba(224,82,82,0.2); }
 </style>

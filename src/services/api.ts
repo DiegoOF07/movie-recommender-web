@@ -30,6 +30,11 @@ export const movieApi = {
   },
   getOne: (title: string) => request<Movie>(`/api/movies/${encodeURIComponent(title)}`),
   create: (m: Movie) => request<{ status: string }>('/api/movies', { method: 'POST', body: JSON.stringify(m) }),
+  createWithMultiLabel: (m: Movie, extraLabel: string) =>
+    request<{ status: string }>('/api/movies/multi-label', {
+      method: 'POST',
+      body: JSON.stringify({ ...m, extraLabel }),
+    }),
   updateProps: (payload: NodePropsUpdate) => request<{ status: string }>('/api/movies/props', { method: 'PATCH', body: JSON.stringify(payload) }),
   deleteProps: (title: string, props: string[]) => request<{ status: string }>(`/api/movies/props/${encodeURIComponent(title)}`, { method: 'DELETE', body: JSON.stringify({ props }) }),
   deleteOne: (title: string) => request<{ status: string }>(`/api/movies/${encodeURIComponent(title)}`, { method: 'DELETE' }),
@@ -47,6 +52,10 @@ export const userApi = {
     return request<User[]>(`/api/users${qs}`)
   },
   getOne: (username: string) => request<User>(`/api/users/${encodeURIComponent(username)}`),
+  getFollows: (username: string) =>
+    request<{ username: string; isFavorite: boolean; since: string }[]>(
+      `/api/users/${encodeURIComponent(username)}/follows`
+    ),
   create: (u: User) => request<{ status: string }>('/api/users', { method: 'POST', body: JSON.stringify(u) }),
   updateProps: (payload: NodePropsUpdate) => request<{ status: string }>('/api/users/props', { method: 'PATCH', body: JSON.stringify(payload) }),
   deleteProps: (username: string, props: string[]) => request<{ status: string }>(`/api/users/props/${encodeURIComponent(username)}`, { method: 'DELETE', body: JSON.stringify({ props }) }),
@@ -124,7 +133,7 @@ export const recommendationApi = {
 export const relationshipApi = {
   updateProps: (payload: RelPropsUpdate) =>
     request<{ status: string }>('/api/relationships/props', { method: 'PATCH', body: JSON.stringify(payload) }),
-  deleteProps: (payload: RelPropsUpdate & { propNames: string[] }) =>
+  deleteProps: (payload: Omit<RelPropsUpdate, 'properties'> & { propNames: string[] }) =>
     request<{ status: string }>('/api/relationships/props', { method: 'DELETE', body: JSON.stringify(payload) }),
   deleteOne: (payload: DeleteRelPayload) =>
     request<{ status: string }>('/api/relationships/one', { method: 'DELETE', body: JSON.stringify(payload) }),

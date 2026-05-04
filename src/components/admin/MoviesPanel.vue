@@ -26,26 +26,19 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading-row">
-      <div class="spinner" />
-    </div>
+    <div v-if="loading" class="loading-row"><div class="spinner" /></div>
     <div v-else-if="!movies.length" class="empty-state">Sin resultados.</div>
     <div v-else class="table-wrap card">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Titulo</th>
-            <th>Fecha</th>
-            <th>Duracion</th>
-            <th>Rating</th>
-            <th>Clasificacion</th>
-            <th>Acciones</th>
+            <th>Titulo</th><th>Fecha</th><th>Duracion</th><th>Rating</th><th>Clasificacion</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="m in movies" :key="m.title">
             <td class="title-cell">{{ m.title }}</td>
-            <td>{{ m.releaseDate?.slice(0, 10) }}</td>
+            <td>{{ m.releaseDate?.slice(0,10) }}</td>
             <td>{{ m.durationMin }} min</td>
             <td><span class="rating-star">&#9733;</span> {{ m.avgRating?.toFixed(1) }}</td>
             <td><span class="tag">{{ m.classification }}</span></td>
@@ -74,9 +67,7 @@
     </div>
 
     <div class="danger-zone card" style="margin-top:24px;padding:20px">
-      <h3
-        style="font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;color:var(--red);margin-bottom:14px">
-        ELIMINAR MULTIPLES PELICULAS</h3>
+      <h3 style="font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;color:var(--red);margin-bottom:14px">ELIMINAR MULTIPLES PELICULAS</h3>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Debes especificar al menos un filtro.</p>
       <div class="form-row" style="margin-bottom:12px">
         <div class="form-group">
@@ -106,20 +97,39 @@
             <div class="form-group"><label>Clasificacion</label><input v-model="form.classification" /></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>Fecha de estreno</label><input v-model="form.releaseDate" type="date" />
-            </div>
-            <div class="form-group"><label>Duracion (min)</label><input v-model.number="form.durationMin"
-                type="number" /></div>
+            <div class="form-group"><label>Fecha de estreno</label><input v-model="form.releaseDate" type="date" /></div>
+            <div class="form-group"><label>Duracion (min)</label><input v-model.number="form.durationMin" type="number" /></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label>Rating promedio</label><input v-model.number="form.avgRating" type="number"
-                step="0.1" /></div>
+            <div class="form-group"><label>Rating promedio</label><input v-model.number="form.avgRating" type="number" step="0.1" /></div>
           </div>
           <div class="form-group"><label>Sinopsis</label><textarea v-model="form.synopsis" rows="3" /></div>
           <div class="form-group"><label>URL del poster</label><input v-model="form.posterUrl" /></div>
           <div class="form-group"><label>URL del backdrop</label><input v-model="form.backdropUrl" /></div>
           <div class="form-group"><label>Idiomas (separados por coma)</label><input v-model="form.languagesStr" /></div>
           <div class="form-group"><label>Tags (separados por coma)</label><input v-model="form.tagsStr" /></div>
+
+          <!-- Label adicional -->
+          <div style="border-top:1px solid var(--border);padding-top:14px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;cursor:pointer;margin:0">
+                <input type="checkbox" v-model="form.useExtraLabel" style="width:auto" />
+                Agregar label adicional al nodo
+              </label>
+            </div>
+            <div v-if="form.useExtraLabel" class="form-group" style="margin-bottom:0">
+              <label>Label adicional</label>
+              <select v-model="form.extraLabel">
+                <option value="">-- Selecciona --</option>
+                <option value="Classic">Classic</option>
+                <option value="Independent">Independent</option>
+              </select>
+              <p style="font-size:12px;color:var(--text-muted);margin-top:6px">
+                El nodo quedara con dos labels: Movie + {{ form.extraLabel || '...' }}
+              </p>
+            </div>
+          </div>
+
           <p v-if="formError" class="error-msg">{{ formError }}</p>
           <p v-if="formSuccess" class="success-msg">{{ formSuccess }}</p>
           <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
@@ -144,20 +154,18 @@
           Pelicula: <strong>{{ updateTarget }}</strong>
         </p>
 
-        <h4 style="font-size:13px;font-weight:600;letter-spacing:0.05em;margin-bottom:12px">ACTUALIZAR PROPIEDAD</h4>
+        <h4 style="font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:12px">ACTUALIZAR PROPIEDAD</h4>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="form-group">
             <label>Propiedad</label>
             <select v-model="upKey">
-              <option value="">-- Selecciona --</option>
+              <option value="">-- Selecciona una propiedad --</option>
               <option v-for="p in movieProps" :key="p.key" :value="p.key">{{ p.label }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Valor</label>
-            <input v-if="currentPropType !== 'boolean'" v-model="upValue"
-              :type="currentPropType === 'number' ? 'number' : 'text'"
-              :step="currentPropType === 'number' ? '0.1' : undefined" />
+            <input v-if="currentPropType !== 'boolean'" v-model="upValue" :type="currentPropType === 'number' ? 'number' : 'text'" :step="currentPropType === 'number' ? '0.1' : undefined" placeholder="Nuevo valor" />
             <select v-else v-model="upValue">
               <option value="true">true</option>
               <option value="false">false</option>
@@ -170,7 +178,7 @@
 
         <hr style="border:none;border-top:1px solid var(--border);margin:20px 0" />
 
-        <h4 style="font-size:13px;font-weight:600;letter-spacing:0.05em;margin-bottom:12px">ELIMINAR PROPIEDADES</h4>
+        <h4 style="font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:12px">ELIMINAR PROPIEDADES</h4>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="form-group">
             <label>Propiedades a eliminar (separadas por coma)</label>
@@ -183,12 +191,22 @@
       </div>
     </div>
 
-    <ConfirmDialog :show="!!deleteTarget" title="Eliminar pelicula"
-      :message="`Seguro que deseas eliminar '${deleteTarget}'? Esta accion es irreversible.`" confirm-label="Eliminar"
-      @confirm="doDelete" @cancel="deleteTarget = ''" />
-    <ConfirmDialog :show="showDeleteMany" title="Eliminar multiples peliculas"
+    <ConfirmDialog
+      :show="!!deleteTarget"
+      title="Eliminar pelicula"
+      :message="`Seguro que deseas eliminar '${deleteTarget}'? Esta accion es irreversible.`"
+      confirm-label="Eliminar"
+      @confirm="doDelete"
+      @cancel="deleteTarget = ''"
+    />
+    <ConfirmDialog
+      :show="showDeleteMany"
+      title="Eliminar multiples peliculas"
       message="Se eliminaran todas las peliculas que coincidan con los filtros. Esta accion es irreversible."
-      confirm-label="Eliminar" @confirm="doDeleteMany" @cancel="showDeleteMany = false" />
+      confirm-label="Eliminar"
+      @confirm="doDeleteMany"
+      @cancel="showDeleteMany = false"
+    />
   </div>
 </template>
 
@@ -199,14 +217,14 @@ import type { Movie } from '@/types'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const movieProps = [
-  { key: 'title', label: 'Titulo', type: 'text' },
-  { key: 'releaseDate', label: 'Fecha de estreno', type: 'text' },
-  { key: 'durationMin', label: 'Duracion (min)', type: 'number' },
-  { key: 'avgRating', label: 'Rating promedio', type: 'number' },
-  { key: 'classification', label: 'Clasificacion', type: 'text' },
-  { key: 'synopsis', label: 'Sinopsis', type: 'text' },
-  { key: 'posterUrl', label: 'URL del poster', type: 'text' },
-  { key: 'backdropUrl', label: 'URL del backdrop', type: 'text' },
+  { key: 'title',          label: 'Titulo',           type: 'text' },
+  { key: 'releaseDate',    label: 'Fecha de estreno', type: 'text' },
+  { key: 'durationMin',    label: 'Duracion (min)',   type: 'number' },
+  { key: 'avgRating',      label: 'Rating promedio',  type: 'number' },
+  { key: 'classification', label: 'Clasificacion',    type: 'text' },
+  { key: 'synopsis',       label: 'Sinopsis',         type: 'text' },
+  { key: 'posterUrl',      label: 'URL del poster',   type: 'text' },
+  { key: 'backdropUrl',    label: 'URL del backdrop', type: 'text' },
 ]
 
 const movies = ref<Movie[]>([])
@@ -215,7 +233,11 @@ const agg = ref<{ genre: string; count: number }[]>([])
 const fClassification = ref('')
 const fMinRating = ref('')
 
-const emptyForm = () => ({ title: '', classification: '', releaseDate: '', durationMin: 0, avgRating: 0, synopsis: '', posterUrl: '', backdropUrl: '', languagesStr: '', tagsStr: '' })
+const emptyForm = () => ({
+  title: '', classification: '', releaseDate: '', durationMin: 0, avgRating: 0,
+  synopsis: '', posterUrl: '', backdropUrl: '', languagesStr: '', tagsStr: '',
+  useExtraLabel: false, extraLabel: '',
+})
 const showCreate = ref(false)
 const formLoading = ref(false)
 const formError = ref('')
@@ -228,28 +250,16 @@ const upValue = ref('')
 const upError = ref('')
 const upSuccess = ref('')
 
+const dpPropsStr = ref('')
+const dpError = ref('')
+const dpSuccess = ref('')
+
 const currentPropType = computed(() => movieProps.find(p => p.key === upKey.value)?.type ?? 'text')
 
 const deleteTarget = ref('')
 const showDeleteMany = ref(false)
 const dmClassification = ref('')
 const dmMaxRating = ref('')
-
-const dpPropsStr = ref('')
-const dpError = ref('')
-const dpSuccess = ref('')
-
-async function deleteProps() {
-  const props = dpPropsStr.value.split(',').map(s => s.trim()).filter(Boolean)
-  if (!props.length) { dpError.value = 'Ingresa al menos una propiedad'; return }
-  dpError.value = ''; dpSuccess.value = ''
-  try {
-    await movieApi.deleteProps(updateTarget.value!, props)
-    dpSuccess.value = 'Propiedades eliminadas.'
-    dpPropsStr.value = ''
-    load()
-  } catch (e: unknown) { dpError.value = e instanceof Error ? e.message : 'Error' }
-}
 
 const canDeleteMany = computed(() => dmClassification.value.trim() !== '' || dmMaxRating.value !== '')
 
@@ -271,13 +281,22 @@ async function loadAgg() {
 
 async function create() {
   if (!form.value.title.trim()) { formError.value = 'El titulo es obligatorio'; return }
+  if (form.value.useExtraLabel && !form.value.extraLabel) {
+    formError.value = 'Selecciona una label adicional o desmarca la opcion'
+    return
+  }
   formLoading.value = true; formError.value = ''; formSuccess.value = ''
   try {
-    await movieApi.create({
+    const payload: Movie = {
       ...form.value,
       languages: form.value.languagesStr.split(',').map(s => s.trim()).filter(Boolean),
       tags: form.value.tagsStr.split(',').map(s => s.trim()).filter(Boolean),
-    })
+    }
+    if (form.value.useExtraLabel && form.value.extraLabel) {
+      await movieApi.createWithMultiLabel(payload, form.value.extraLabel)
+    } else {
+      await movieApi.create(payload)
+    }
     formSuccess.value = 'Pelicula creada exitosamente.'
     form.value = emptyForm()
     load()
@@ -287,7 +306,9 @@ async function create() {
 }
 
 function openUpdate(m: Movie) {
-  updateTarget.value = m.title; upKey.value = ''; upValue.value = ''; upError.value = ''; upSuccess.value = ''
+  updateTarget.value = m.title
+  upKey.value = ''; upValue.value = ''; upError.value = ''; upSuccess.value = ''
+  dpPropsStr.value = ''; dpError.value = ''; dpSuccess.value = ''
 }
 
 async function updateProps() {
@@ -302,6 +323,18 @@ async function updateProps() {
     upSuccess.value = 'Propiedad actualizada.'
     load()
   } catch (e: unknown) { upError.value = e instanceof Error ? e.message : 'Error' }
+}
+
+async function deleteProps() {
+  const props = dpPropsStr.value.split(',').map(s => s.trim()).filter(Boolean)
+  if (!props.length) { dpError.value = 'Ingresa al menos una propiedad'; return }
+  dpError.value = ''; dpSuccess.value = ''
+  try {
+    await movieApi.deleteProps(updateTarget.value!, props)
+    dpSuccess.value = 'Propiedades eliminadas.'
+    dpPropsStr.value = ''
+    load()
+  } catch (e: unknown) { dpError.value = e instanceof Error ? e.message : 'Error' }
 }
 
 function askDelete(title: string) { deleteTarget.value = title }
@@ -326,89 +359,18 @@ onMounted(load)
 </script>
 
 <style scoped>
-.panel {
-  padding: 28px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-}
-
-.loading-row {
-  display: flex;
-  justify-content: center;
-  padding: 48px;
-}
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.data-table th {
-  padding: 12px 14px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
-.data-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-secondary);
-  vertical-align: middle;
-}
-
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.title-cell {
-  color: var(--text-primary);
-  font-weight: 500;
-  max-width: 220px;
-}
-
-.agg-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px 12px;
-}
-
-.agg-name {
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.agg-count {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.danger-zone {
-  border-color: rgba(224, 82, 82, 0.2);
-}
+.panel { padding: 28px; max-width: 1200px; margin: 0 auto; }
+.panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.loading-row { display: flex; justify-content: center; padding: 48px; }
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+.title-cell { color: var(--text-primary); font-weight: 500; max-width: 220px; }
+.agg-chip { display: flex; align-items: center; gap: 8px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; }
+.agg-name { font-size: 13px; color: var(--text-primary); }
+.agg-count { font-size: 12px; font-weight: 600; color: var(--accent); }
+.danger-zone { border-color: rgba(224,82,82,0.2); }
 </style>
