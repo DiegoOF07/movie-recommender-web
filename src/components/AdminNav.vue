@@ -36,6 +36,7 @@ const sections = [
   { key: 'actors',        label: 'Actores' },
   { key: 'directors',     label: 'Directores' },
   { key: 'relationships', label: 'Relaciones' },
+  { key: 'nodeSearch',    label: 'Buscar nodo' },
 ]
 
 const router = useRouter()
