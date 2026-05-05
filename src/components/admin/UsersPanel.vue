@@ -22,20 +22,13 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading-row">
-      <div class="spinner" />
-    </div>
+    <div v-if="loading" class="loading-row"><div class="spinner" /></div>
     <div v-else-if="!users.length" class="empty-state">Sin resultados.</div>
     <div v-else class="table-wrap card">
       <table class="data-table">
         <thead>
           <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Edad</th>
-            <th>Pais</th>
-            <th>Fecha ingreso</th>
-            <th>Acciones</th>
+            <th>Username</th><th>Email</th><th>Edad</th><th>Pais</th><th>Fecha ingreso</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -44,7 +37,7 @@
             <td>{{ u.email }}</td>
             <td>{{ u.age }}</td>
             <td>{{ u.country }}</td>
-            <td>{{ u.joinDate?.slice(0, 10) }}</td>
+            <td>{{ u.joinDate?.slice(0,10) }}</td>
             <td>
               <div style="display:flex;gap:6px">
                 <button class="btn btn-ghost btn-sm" @click="openUpdate(u.username)">Editar props</button>
@@ -70,9 +63,7 @@
     </div>
 
     <div class="danger-zone card" style="margin-top:24px;padding:20px">
-      <h3
-        style="font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;color:var(--red);margin-bottom:14px">
-        ELIMINAR MULTIPLES USUARIOS</h3>
+      <h3 style="font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;color:var(--red);margin-bottom:14px">ELIMINAR MULTIPLES USUARIOS</h3>
       <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Debes especificar al menos un filtro.</p>
       <div class="form-row" style="margin-bottom:12px">
         <div class="form-group">
@@ -106,8 +97,7 @@
             <div class="form-group"><label>Pais</label><input v-model="form.country" /></div>
           </div>
           <div class="form-group"><label>Fecha de ingreso</label><input v-model="form.joinDate" type="date" /></div>
-          <div class="form-group"><label>Generos favoritos (separados por coma)</label><input
-              v-model="form.genresStr" /></div>
+          <div class="form-group"><label>Generos favoritos (separados por coma)</label><input v-model="form.genresStr" /></div>
           <p v-if="formError" class="error-msg">{{ formError }}</p>
           <p v-if="formSuccess" class="success-msg">{{ formSuccess }}</p>
           <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
@@ -125,58 +115,70 @@
     <div v-if="updateTarget" class="modal-overlay" @click.self="updateTarget = null">
       <div class="modal">
         <div class="modal-header">
-          <span class="modal-title">GESTIONAR PROPS</span>
+          <span class="modal-title">EDITAR PROPS</span>
           <button class="modal-close" @click="updateTarget = null">&times;</button>
         </div>
         <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">
           Usuario: <strong>{{ updateTarget }}</strong>
         </p>
-
-        <h4 style="font-size:13px;font-weight:600;letter-spacing:0.05em;margin-bottom:12px">ACTUALIZAR PROPIEDAD</h4>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="form-group">
             <label>Propiedad</label>
             <select v-model="upKey">
-              <option value="">-- Selecciona --</option>
+              <option value="">-- Selecciona una propiedad --</option>
               <option v-for="p in userProps" :key="p.key" :value="p.key">{{ p.label }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Valor</label>
-            <input v-if="currentPropType !== 'boolean'" v-model="upValue"
-              :type="currentPropType === 'number' ? 'number' : 'text'"
-              :step="currentPropType === 'number' ? '0.1' : undefined" />
-            <select v-else v-model="upValue">
-              <option value="true">true</option>
-              <option value="false">false</option>
-            </select>
+            <input v-model="upValue" :type="currentPropType === 'number' ? 'number' : 'text'" placeholder="Nuevo valor" />
           </div>
-          <p v-if="upSuccess" class="success-msg">{{ upSuccess }}</p>
           <p v-if="upError" class="error-msg">{{ upError }}</p>
-          <button class="btn btn-primary" style="align-self:flex-end" @click="updateProps">Guardar</button>
+          <p v-if="upSuccess" class="success-msg">{{ upSuccess }}</p>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn btn-ghost" @click="updateTarget = null">Cancelar</button>
+            <button class="btn btn-primary" @click="updateProps">Guardar</button>
+          </div>
         </div>
 
         <hr style="border:none;border-top:1px solid var(--border);margin:20px 0" />
 
-        <h4 style="font-size:13px;font-weight:600;letter-spacing:0.05em;margin-bottom:12px">ELIMINAR PROPIEDADES</h4>
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div class="form-group">
-            <label>Propiedades a eliminar (separadas por coma)</label>
-            <input v-model="dpPropsStr" placeholder="Ej: synopsis, backdropUrl" />
+        <h4 style="font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:12px">GENEROS FAVORITOS</h4>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="chips-wrap">
+            <span v-for="(g, i) in fgChips" :key="g" class="chip">
+              {{ g }}
+              <button class="chip-remove" @click="fgRemove(i)">&times;</button>
+            </span>
+            <span v-if="!fgChips.length" style="font-size:12px;color:var(--text-muted)">Sin generos agregados.</span>
           </div>
-          <p v-if="dpSuccess" class="success-msg">{{ dpSuccess }}</p>
-          <p v-if="dpError" class="error-msg">{{ dpError }}</p>
-          <button class="btn btn-danger" style="align-self:flex-end" @click="deleteProps">Eliminar props</button>
+          <div style="display:flex;gap:8px">
+            <input v-model="fgInput" placeholder="Agregar genero..." style="flex:1" @keyup.enter="fgAdd" />
+            <button class="btn btn-ghost btn-sm" @click="fgAdd">Agregar</button>
+          </div>
+          <p v-if="fgError" class="error-msg">{{ fgError }}</p>
+          <p v-if="fgSuccess" class="success-msg">{{ fgSuccess }}</p>
+          <button class="btn btn-primary" style="align-self:flex-end" @click="fgSave">Guardar generos</button>
         </div>
       </div>
     </div>
 
-    <ConfirmDialog :show="!!deleteTarget" title="Eliminar usuario"
-      :message="`Seguro que deseas eliminar al usuario '${deleteTarget}'?`" confirm-label="Eliminar" @confirm="doDelete"
-      @cancel="deleteTarget = ''" />
-    <ConfirmDialog :show="showDeleteMany" title="Eliminar multiples usuarios"
+    <ConfirmDialog
+      :show="!!deleteTarget"
+      title="Eliminar usuario"
+      :message="`Seguro que deseas eliminar al usuario '${deleteTarget}'?`"
+      confirm-label="Eliminar"
+      @confirm="doDelete"
+      @cancel="deleteTarget = ''"
+    />
+    <ConfirmDialog
+      :show="showDeleteMany"
+      title="Eliminar multiples usuarios"
       message="Se eliminaran todos los usuarios que coincidan con los filtros. Esta accion es irreversible."
-      confirm-label="Eliminar" @confirm="doDeleteMany" @cancel="showDeleteMany = false" />
+      confirm-label="Eliminar"
+      @confirm="doDeleteMany"
+      @cancel="showDeleteMany = false"
+    />
   </div>
 </template>
 
@@ -187,11 +189,11 @@ import type { User } from '@/types'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const userProps = [
-  { key: 'username', label: 'Username', type: 'text' },
-  { key: 'email', label: 'Email', type: 'text' },
-  { key: 'age', label: 'Edad', type: 'number' },
-  { key: 'country', label: 'Pais', type: 'text' },
-  { key: 'joinDate', label: 'Fecha de ingreso', type: 'text' },
+  { key: 'username', label: 'Username',          type: 'text' },
+  { key: 'email',    label: 'Email',             type: 'text' },
+  { key: 'age',      label: 'Edad',              type: 'number' },
+  { key: 'country',  label: 'Pais',              type: 'text' },
+  { key: 'joinDate', label: 'Fecha de ingreso',  type: 'text' },
 ]
 
 const users = ref<User[]>([])
@@ -214,26 +216,33 @@ const upSuccess = ref('')
 
 const currentPropType = computed(() => userProps.find(p => p.key === upKey.value)?.type ?? 'text')
 
+// favoriteGenres array editor
+const fgChips = ref<string[]>([])
+const fgInput = ref('')
+const fgError = ref('')
+const fgSuccess = ref('')
+
+function fgAdd() {
+  const v = fgInput.value.trim()
+  if (!v) return
+  if (!fgChips.value.includes(v)) fgChips.value.push(v)
+  fgInput.value = ''
+}
+function fgRemove(i: number) { fgChips.value.splice(i, 1) }
+
+async function fgSave() {
+  fgError.value = ''; fgSuccess.value = ''
+  try {
+    await userApi.updateProps({ filter: { username: updateTarget.value }, properties: { favoriteGenres: fgChips.value } })
+    fgSuccess.value = 'Generos favoritos actualizados.'
+    load()
+  } catch (e: unknown) { fgError.value = e instanceof Error ? e.message : 'Error' }
+}
+
 const deleteTarget = ref('')
 const showDeleteMany = ref(false)
 const dmCountry = ref('')
 const dmMaxAge = ref('')
-
-const dpPropsStr = ref('')
-const dpError = ref('')
-const dpSuccess = ref('')
-
-async function deleteProps() {
-  const props = dpPropsStr.value.split(',').map(s => s.trim()).filter(Boolean)
-  if (!props.length) { dpError.value = 'Ingresa al menos una propiedad'; return }
-  dpError.value = ''; dpSuccess.value = ''
-  try {
-    await userApi.deleteProps(updateTarget.value!, props)
-    dpSuccess.value = 'Propiedades eliminadas.'
-    dpPropsStr.value = ''
-    load()
-  } catch (e: unknown) { dpError.value = e instanceof Error ? e.message : 'Error' }
-}
 
 const canDeleteMany = computed(() => dmCountry.value.trim() !== '' || dmMaxAge.value !== '')
 
@@ -266,6 +275,9 @@ async function create() {
 
 function openUpdate(username: string) {
   updateTarget.value = username; upKey.value = ''; upValue.value = ''; upError.value = ''; upSuccess.value = ''
+  const user = users.value.find(u => u.username === username)
+  fgChips.value = user?.favoriteGenres ? [...user.favoriteGenres] : []
+  fgInput.value = ''; fgError.value = ''; fgSuccess.value = ''
 }
 
 async function updateProps() {
@@ -300,83 +312,21 @@ onMounted(load)
 </script>
 
 <style scoped>
-.panel {
-  padding: 28px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-}
-
-.loading-row {
-  display: flex;
-  justify-content: center;
-  padding: 48px;
-}
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.data-table th {
-  padding: 12px 14px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
-.data-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-secondary);
-  vertical-align: middle;
-}
-
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.agg-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px 12px;
-}
-
-.agg-name {
-  font-size: 13px;
-  color: var(--text-primary);
-}
-
-.agg-count {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.danger-zone {
-  border-color: rgba(224, 82, 82, 0.2);
-}
+.panel { padding: 28px; max-width: 1200px; margin: 0 auto; }
+.panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.loading-row { display: flex; justify-content: center; padding: 48px; }
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.data-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+.agg-chip { display: flex; align-items: center; gap: 8px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; }
+.agg-name { font-size: 13px; color: var(--text-primary); }
+.agg-count { font-size: 12px; font-weight: 600; color: var(--accent); }
+.danger-zone { border-color: rgba(224,82,82,0.2); }
+.chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; min-height: 32px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; background: var(--accent-dim); border: 1px solid rgba(232,184,75,0.3); border-radius: 20px; padding: 3px 10px; font-size: 12px; color: var(--accent); }
+.chip-remove { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 14px; line-height: 1; padding: 0; opacity: 0.7; }
+.chip-remove:hover { opacity: 1; }
 </style>
