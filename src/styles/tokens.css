@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+/* Revelado: el cuarto oscuro donde se revela la película */
+:root {
+  --bg: #120d0c;
+  --surface: #1d1513;
+  --surface-2: #2a1a16;
+  --line: #3a2a25;
+  --ink: #f1e6d8;
+  --ink-dim: #b39b8c;
+  --ink-mute: #8a7468;
+  --safelight: #ff5a36;
+  --amber: #e8a33d;
+  --danger: #ff8a6b;
+  --danger-bg: #3a1a12;
+  --ok: #9fd08a;
+
+  --node-movie: #ff8a6b;
+  --node-movie-bg: #3a1a12;
+  --node-user: #e8a33d;
+  --node-user-bg: #3a2a12;
+  --node-genre: #d9c6b6;
+  --node-genre-bg: #2a2420;
+  --node-actor: #f0b6a0;
+  --node-actor-bg: #3a2420;
+  --node-director: #c9a27a;
+  --node-director-bg: #2f2418;
+
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --r-sm: 6px;
+  --r: 10px;
+  --ease: 180ms ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--safelight);
+  outline-offset: 2px;
+}
+
+::selection { background: var(--safelight); color: var(--bg); }
+
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

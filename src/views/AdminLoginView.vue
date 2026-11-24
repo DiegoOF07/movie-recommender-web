@@ -1,74 +1,103 @@
-<template>
-  <div class="login-page">
-    <div class="login-box card">
-      <div class="brand">
-        <span class="brand-icon">&#9881;</span>
-        <h1 class="brand-name">ADMIN</h1>
-      </div>
-      <p class="brand-tagline">Acceso restringido — Panel de administracion</p>
-
-      <hr class="divider" />
-
-      <form @submit.prevent="submit">
-        <div class="form-group">
-          <label for="password">Contrasena de administrador</label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            placeholder="Ingresa la contrasena"
-            required
-          />
-        </div>
-
-        <p v-if="error" class="error-msg" style="margin-top:12px">{{ error }}</p>
-
-        <button
-          type="submit"
-          class="btn btn-primary"
-          style="width:100%; margin-top:18px; padding:12px; font-size:15px; justify-content:center"
-        >
-          Ingresar
-        </button>
-      </form>
-
-      <button class="btn btn-ghost btn-sm" style="margin-top:12px; width:100%; justify-content:center" @click="router.push('/login')">
-        Volver al inicio
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth } from '@/stores/auth'
+import Button from '@/ui/Button.vue'
+import FieldGroup from '@/ui/FieldGroup.vue'
 
 const router = useRouter()
 const password = ref('')
 const error = ref('')
 
+// Control de demo: la contraseña se compara en el navegador (ver README)
 function submit() {
   if (auth.checkAdminPassword(password.value)) {
     auth.loginAdmin()
-    router.push('/admin')
+    router.push({ name: 'admin', params: { label: 'Movie' } })
   } else {
-    error.value = 'Contrasena incorrecta.'
+    error.value = 'Contraseña incorrecta.'
     password.value = ''
   }
 }
 </script>
 
+<template>
+  <main class="login">
+    <section class="login-box" aria-labelledby="admin-title">
+      <p class="mono-label">▸ Acceso restringido</p>
+      <h1 id="admin-title" class="brand">ADMINISTRACIÓN</h1>
+      <p class="tagline">Edita el grafo: películas, personas, usuarios y cómo se conectan.</p>
+
+      <form class="login-form" @submit.prevent="submit">
+        <FieldGroup label="Contraseña" :error="error">
+          <template #default="{ id, describedBy, invalid }">
+            <input
+              :id="id"
+              v-model="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              :aria-describedby="describedBy"
+              :aria-invalid="invalid || undefined"
+            />
+          </template>
+        </FieldGroup>
+        <Button type="submit" variant="primary">Entrar</Button>
+      </form>
+
+      <RouterLink to="/login" class="back">← Volver a la app</RouterLink>
+    </section>
+  </main>
+</template>
+
 <style scoped>
-.login-page {
+.login {
   min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(ellipse at 40% 30%, rgba(91,156,246,0.06) 0%, transparent 55%), var(--bg-base);
-  padding: 24px;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 38%, rgba(232, 163, 61, 0.08), transparent 70%),
+    var(--bg);
 }
-.login-box { width: 100%; max-width: 380px; padding: 40px 36px; }
-.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-.brand-icon { font-size: 28px; color: var(--blue); }
-.brand-name { font-family: var(--font-display); font-size: 38px; letter-spacing: 0.1em; color: var(--text-primary); }
-.brand-tagline { font-size: 13px; color: var(--text-secondary); }
+
+.login-box {
+  width: min(400px, 100%);
+  padding: 32px 30px 26px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  margin: 6px 0 8px;
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 0.95;
+  color: var(--amber);
+}
+
+.tagline {
+  color: var(--ink-dim);
+  font-size: 14px;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.back {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--ink-mute);
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--ink);
+}
 </style>

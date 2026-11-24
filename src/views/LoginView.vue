@@ -1,53 +1,10 @@
-<template>
-  <div class="login-page">
-    <div class="bg-noise" />
-    <div class="login-box card">
-      <div class="brand">
-        <span class="brand-icon">&#9654;</span>
-        <h1 class="brand-name">CINEGRAFO</h1>
-      </div>
-      <p class="brand-tagline">Tu motor de recomendacion cinematografica</p>
-
-      <hr class="divider" />
-
-      <form @submit.prevent="submit">
-        <div class="form-group">
-          <label for="username">Nombre de usuario</label>
-          <input
-            id="username"
-            v-model="username"
-            type="text"
-            placeholder="Ingresa tu username"
-            autocomplete="username"
-            required
-          />
-        </div>
-
-        <p v-if="error" class="error-msg" style="margin-top: 12px">{{ error }}</p>
-
-        <button
-          type="submit"
-          class="btn btn-primary"
-          style="width: 100%; margin-top: 18px; padding: 12px; font-size: 15px; justify-content: center"
-          :disabled="loading"
-        >
-          <span v-if="loading" class="spinner" style="width:16px;height:16px;margin:0" />
-          <span v-else>Entrar</span>
-        </button>
-      </form>
-
-      <button class="btn btn-ghost btn-sm" style="margin-top: 12px; width: 100%; justify-content: center" @click="goAdmin">
-        Panel de administracion
-      </button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth } from '@/stores/auth'
 import { userApi } from '@/services/api'
+import Button from '@/ui/Button.vue'
+import FieldGroup from '@/ui/FieldGroup.vue'
 
 const router = useRouter()
 const username = ref('')
@@ -55,71 +12,113 @@ const loading = ref(false)
 const error = ref('')
 
 async function submit() {
-  if (!username.value.trim()) return
+  const name = username.value.trim()
+  if (!name) return
   loading.value = true
   error.value = ''
   try {
-    await userApi.getOne(username.value.trim())
-    auth.login(username.value.trim())
+    await userApi.getOne(name)
+    auth.login(name)
     router.push('/dashboard')
   } catch {
-    error.value = 'Usuario no encontrado. Verifica el username e intenta de nuevo.'
+    error.value = 'No encontramos ese usuario. Revisa cómo está escrito.'
   } finally {
     loading.value = false
   }
 }
-
-function goAdmin() {
-  router.push('/admin/login')
-}
 </script>
 
-<style scoped>
-.login-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at 60% 20%, rgba(232,184,75,0.07) 0%, transparent 60%),
-              var(--bg-base);
-  padding: 24px;
-}
+<template>
+  <main class="login">
+    <section class="login-box" aria-labelledby="login-title">
+      <p class="mono-label">▸ Sala de revelado</p>
+      <h1 id="login-title" class="brand">CINEGRAFO</h1>
+      <p class="tagline">Recomendaciones que salen de recorrer un grafo: lo que viste, lo que te gustó y quién piensa como tú.</p>
 
-.bg-noise {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      <form class="login-form" @submit.prevent="submit">
+        <FieldGroup label="Usuario" :error="error" hint="Prueba con jorge.vasquez">
+          <template #default="{ id, describedBy, invalid }">
+            <input
+              :id="id"
+              v-model="username"
+              type="text"
+              autocomplete="username"
+              spellcheck="false"
+              required
+              :aria-describedby="describedBy"
+              :aria-invalid="invalid || undefined"
+            />
+          </template>
+        </FieldGroup>
+        <Button type="submit" variant="primary" :loading="loading">Entrar</Button>
+      </form>
+
+      <RouterLink to="/admin/login" class="admin-link">Panel de administración →</RouterLink>
+    </section>
+    <p class="edge mono-label" aria-hidden="true">KODAK 5219 · 23 · ▸▸ · CINEGRAFO · 24</p>
+  </main>
+</template>
+
+<style scoped>
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 38%, rgba(255, 90, 54, 0.1), transparent 70%),
+    var(--bg);
 }
 
 .login-box {
-  position: relative; z-index: 1;
-  width: 100%; max-width: 400px;
-  padding: 40px 36px;
+  width: min(400px, 100%);
+  padding: 32px 30px 26px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
-}
-
-.brand-icon {
-  font-size: 28px;
-  color: var(--accent);
-  line-height: 1;
-}
-
-.brand-name {
+  margin: 6px 0 8px;
   font-family: var(--font-display);
-  font-size: 38px;
-  letter-spacing: 0.1em;
-  color: var(--text-primary);
-  line-height: 1;
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  color: var(--safelight);
 }
 
-.brand-tagline {
+.tagline {
+  color: var(--ink-dim);
+  font-size: 14px;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.admin-link {
+  display: inline-block;
+  margin-top: 18px;
   font-size: 13px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
+  color: var(--ink-mute);
+  text-decoration: none;
+}
+
+.admin-link:hover {
+  color: var(--ink);
+}
+
+/* Como el código impreso en el borde del celuloide */
+.edge {
+  position: fixed;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #4a3630;
 }
 </style>

@@ -13,7 +13,7 @@ const router = createRouter({
     { path: '/login', component: LoginView },
     { path: '/dashboard', component: DashboardView, meta: { requiresUser: true } },
     { path: '/admin/login', component: AdminLoginView },
-    { path: '/admin', component: AdminView, meta: { requiresAdmin: true } },
+    { path: '/admin/:label?/:key?', name: 'admin', component: AdminView, meta: { requiresAdmin: true } },
   ],
 })
 

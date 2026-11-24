@@ -3,6 +3,7 @@ import type {
   WatchedRel, RatedRel, WatchlistRel, FollowsRel, PrefersRel,
   MovieGenreRel, MovieActorRel, MovieDirectorRel, SimilarToRel, WorkedWithRel,
   NodePropsUpdate, RelPropsUpdate, DeleteRelPayload,
+  NodeLabel, NodeRef, Neighborhood, Activity,
 } from '@/types'
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
@@ -67,6 +68,7 @@ export const userApi = {
   createWatchlist: (rel: WatchlistRel) => request<{ status: string }>('/api/users/relations/watchlist', { method: 'POST', body: JSON.stringify(rel) }),
   createFollows: (rel: FollowsRel) => request<{ status: string }>('/api/users/relations/follows', { method: 'POST', body: JSON.stringify(rel) }),
   createPrefers: (rel: PrefersRel) => request<{ status: string }>('/api/users/relations/prefers', { method: 'POST', body: JSON.stringify(rel) }),
+  activity: (username: string) => request<Activity>(`/api/users/${encodeURIComponent(username)}/activity`),
 }
 
 // Genres
@@ -139,4 +141,26 @@ export const relationshipApi = {
     request<{ status: string }>('/api/relationships/one', { method: 'DELETE', body: JSON.stringify(payload) }),
   deleteMany: (payload: DeleteRelPayload) =>
     request<{ status: string }>('/api/relationships/many', { method: 'DELETE', body: JSON.stringify(payload) }),
+}
+// Grafo: nodos y relaciones identificados por su clave
+const nodePath = (label: NodeLabel, key: string) => `/api/graph/${label}/${encodeURIComponent(key)}`
+
+export const graphApi = {
+  neighbors: (label: NodeLabel, key: string, limit = 12) =>
+    request<Neighborhood>(`${nodePath(label, key)}/neighbors?limit=${limit}`),
+  search: (q: string, labels?: NodeLabel[], limit = 10) => {
+    const params = new URLSearchParams({ q })
+    if (labels?.length) params.set('labels', labels.join(','))
+    params.set('limit', String(limit))
+    return request<NodeRef[]>(`/api/search?${params}`)
+  },
+  deleteRelationship: (type: string, from: NodeRef, to: NodeRef) =>
+    request<{ deleted: number }>('/api/graph/relationships', {
+      method: 'DELETE',
+      body: JSON.stringify({ type, from, to }),
+    }),
+  patchNode: (label: NodeLabel, key: string, props: Record<string, unknown>) =>
+    request<{ status: string }>(nodePath(label, key), { method: 'PATCH', body: JSON.stringify({ props }) }),
+  deleteNode: (label: NodeLabel, key: string) =>
+    request<{ deletedRelationships: number }>(nodePath(label, key), { method: 'DELETE' }),
 }
