@@ -18,6 +18,7 @@ export interface Movie {
   synopsis: string
   posterUrl: string
   backdropUrl: string
+  genres?: string[]
 }
 
 export interface Genre {
@@ -154,4 +155,33 @@ export interface GenreAggregate {
 export interface CountryAggregate {
   country: string
   count: number
+}
+
+// Grafo
+export type NodeLabel = 'Movie' | 'User' | 'Genre' | 'Actor' | 'Director'
+
+export interface NodeRef {
+  label: NodeLabel
+  key: string
+}
+
+export interface Neighbor extends NodeRef {
+  props: Record<string, unknown>
+}
+
+export interface Group {
+  type: string
+  direction: 'out' | 'in'
+  total: number
+  items: Neighbor[]
+}
+
+export interface Neighborhood {
+  node: NodeRef & { props: Record<string, unknown> }
+  groups: Group[]
+}
+
+export interface Activity {
+  watched: string[]
+  ratings: Record<string, number>
 }
